@@ -13,6 +13,13 @@ fi
 domain_name=$1
 
 open_dkim_folder="/etc/opendkim"
+dns_server_name="debord"
+
+if [ `ssh debord grep -L "mx1.xtreamlab.net." /var/lib/bind/$domain_name.hosts | wc -l` -eq 1 ]
+then
+    echo "We do not manage mail for this domain, so skipping DKIM record creation"
+    exit
+fi
 
 signing_table_name="${open_dkim_folder}/signing.table"
 signing_table_entry="*@${domain_name} default._domainkey.${domain_name}"
@@ -52,10 +59,12 @@ fi
 
 # add the DMARC record to the result
 sudo cp "${keys_folder}/default.txt" ./tmp
+sudo chmod go+rw ./tmp 
 echo -e "_dmarc\tIN\tTXT\t\"v=DMARC1; p=quarantine; pct=100; adkim=s; aspf=s; fo=1\"" >> ./tmp
 
 # copy the file to the remote (DNS) server and run a script to
 # add the DMARC and DKIM records to the end of the DNS hosts file
-scp ./tmp debord:
-ssh debord ./dmarc-check-and-fix.sh ${domain_name}
+scp ./tmp $dns_server_name:
+sudo rm ./tmp
+ssh $dns_server_name ./dmarc-check-and-fix.sh ${domain_name}
 
