@@ -66,5 +66,5 @@ echo -e "_dmarc\tIN\tTXT\t\"v=DMARC1; p=quarantine; pct=100; adkim=s; aspf=s; fo
 # add the DMARC and DKIM records to the end of the DNS hosts file
 scp ./tmp $dns_server_name:
 sudo rm ./tmp
-ssh $dns_server_name ./dmarc-check-and-fix.sh ${domain_name}
+ssh $dns_server_name dmarc-check-and-fix.sh ${domain_name}
 
