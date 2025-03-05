@@ -1,0 +1,14 @@
+#!/bin/bash
+
+pushd /var/lib/bind
+for file in *.hosts; do
+    domain="${file//\.hosts/}"
+    if [ `whois $domain | grep -ic "ns1.xtreamlab.net"` -gt 0 ]
+    then
+	echo "we host DNS for $domain"
+    else
+	echo "we do not appear to host DNS for $domain ... please check"
+    fi
+    sleep 5
+done
+popd
