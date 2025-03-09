@@ -49,17 +49,22 @@ fi
 # create the DKIM private key
 if sudo test -f ${keys_folder}/default.private
 then
-    echo "> Key '${keys_folder}/default.private' already exists ... skipping"
+    echo "> Key '${keys_folder}/default.private' already exists ... regenerating"
 else
     sudo mkdir "${keys_folder}"
-    sudo opendkim-genkey -b 2048 -d "${domain_name}" -D "${keys_folder}" -s default -v
-    sudo chown opendkim:opendkim "${keys_folder}/default.private"
-    echo "> Created new private key '${keys_folder}/default.private'"
 fi
 
-# add the DMARC record to the result
+sudo opendkim-genkey -b 2048 -d "${domain_name}" -D "${keys_folder}" -s default -v
+sudo chown -R opendkim:opendkim "${keys_folder}"
+echo "> Created new private key '${keys_folder}/default.private'"
+
 sudo cp "${keys_folder}/default.txt" ./tmp
 sudo chmod go+rw ./tmp 
+
+# ensure Canonalization is set to relaxed
+sed "s/k=rsa;/k=rsa; c=relaxed;/" ./tmp
+
+# add the DMARC record to the result
 echo -e "_dmarc\tIN\tTXT\t\"v=DMARC1; p=quarantine; pct=100; adkim=s; aspf=s; fo=1\"" >> ./tmp
 
 # copy the file to the remote (DNS) server and run a script to
