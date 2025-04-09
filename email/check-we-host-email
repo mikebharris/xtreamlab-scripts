@@ -1,0 +1,13 @@
+#!/bin/bash
+
+pushd /etc/postfix
+for domain in `cat domains`; do
+    if [ `dig MX $domain | grep -ic -e "m.*\.xtreamlab\.net"` -gt 0 ]
+    then
+	echo "we handle email for $domain"
+    else
+	echo "we do not appear to handle email for $domain ... please check"
+    fi
+    sleep 5
+done
+popd
