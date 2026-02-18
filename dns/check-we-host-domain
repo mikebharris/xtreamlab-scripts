@@ -9,6 +9,6 @@ for file in *.hosts; do
     else
 	echo "we do not appear to host DNS for $domain ... please check"
     fi
-    sleep 5
+    sleep 2
 done
 popd
