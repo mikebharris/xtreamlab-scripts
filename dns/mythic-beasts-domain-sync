@@ -12,7 +12,8 @@ for line in ${list_command_output[@]:1}; do
 done
 
 echo "The Domains with have with Mythic Beasts are ${mb_domain_list[@]}"
-exit
+
+echo
 echo "I will now see if there are any new domains that need uploading to Mythic Beasts...."
 for file in *.hosts; do
     domain="${file//\.hosts/}"
@@ -25,6 +26,7 @@ for file in *.hosts; do
     fi
 done
 
+echo
 echo "I will now see if there are any domains that have been deleted...."
 for domain in ${mb_domain_list[@]}; do
     hosts_file="${domain}.hosts"
