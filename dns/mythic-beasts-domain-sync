@@ -1,0 +1,42 @@
+#!/bin/bash
+
+pushd /var/lib/bind
+
+echo "Checking the domains we have listed with Mythic Beasts Secondary DNS service...."
+mb_domain_list=()
+mapfile -t list_command_output < <(curl -s -XPOST "https://www.mythic-beasts.com/customer/secondarydnsapi" -d username=${MB_USERNAME} -d password=${MB_PASSWORD} -d command=LIST)
+for line in ${list_command_output[@]:1}; do
+    if [ ${line} != 'DOMAIN' ]; then
+	mb_domain_list+=(${line})
+    fi
+done
+
+echo "The Domains with have with Mythic Beasts are ${mb_domain_list[@]}"
+
+echo
+echo "I will now see if there are any new domains that need uploading to Mythic Beasts...."
+for file in *.hosts; do
+    domain="${file//\.hosts/}"
+    if [[ ${mb_domain_list[@]} =~ $domain ]]
+    then
+	echo "Domain $domain is already registered with MB and doesn't need adding."
+    else
+	echo "Domain $domain is not registered with MB, I will add it ...."
+	curl -XPOST "https://www.mythic-beasts.com/customer/secondarydnsapi" -d username=${MB_USERNAME} -d password=${MB_PASSWORD} -d command="ADD%20$domain"
+    fi
+done
+
+echo
+echo "I will now see if there are any domains that have been deleted...."
+for domain in ${mb_domain_list[@]}; do
+    hosts_file="${domain}.hosts"
+    if [[ -f $hosts_file ]]
+    then
+	echo "Domain $domain is registered with MB and we have a hosts file for it; all good."
+    else
+	echo "Domain $domain is registered with MB, but there is no hosts file.  I will delete it from MB...."
+	curl -XPOST "https://www.mythic-beasts.com/customer/secondarydnsapi" -d username=${MB_USERNAME} -d password=${MB_PASSWORD} -d command="DELETE%20$domain"
+    fi
+done
+
+popd
