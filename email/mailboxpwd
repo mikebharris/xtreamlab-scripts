@@ -7,5 +7,4 @@ then
 fi
 
 mailbox_name=$1
-sudo db_dump -d a /etc/sasldb2 | grep -1 $mailbox_name | tail -1
-
+sudo db_dump -d a /etc/sasldb2 | grep -1 $mailbox_name | tail -1 | sed -E 's/.*data: (.*)/\1/'
